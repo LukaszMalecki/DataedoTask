@@ -1,0 +1,89 @@
+1. - Błąd w nazwie pliku "dataa.csv" zamiast "data.csv"
+	(Program.cs - ln 15 - reader.ImportAndPrintData("dataa.csv");)
+
+2. - System.IndexOutOfRangeException, brak kontroli, czyli liczba pól w wierszu jest zgodna z oczekiwaną (w pliku jest co najmniej 1 wiersz z samym enterem)
+	(DataReader.cs - ln 33 - importedObject.Name = values[1];)
+
+2.1 - na potrzeby code review będę pomijał wiersze z nieoczekiwną liczbą pól, jeśli potrzebujesz innego rozwiązania, to możesz to zmodyfikować
+
+2.2 - dodałem sprawdzenie oraz CONST w ImportedObject mówiący o oczekiwanej liczbie pól.
+
+3. - Niepotrzebne public string Name w ImportedObject, ta właściwość jest już dostarczana przez rodzica
+
+4. - Błąd - Niepotrzeby znak równości w for (int i = 0; i <= importedLines.Count; i++)
+
+4.1 - Błąd - zależnie od tego, czy jest header, powinno zaczynać się od 0 lub 1, dodałem bool hasHeader
+
+5. Niedokładność - zamiana w każdej iteracji IEnumerable na listę jest dziwne i niewygodne, ponadto IEnumerable daje tylko dostęp do enumeratora, przez co te konwersje rzutowania są potrzebne, a pod spodem i tak jest lista, zatem nie widzę powodu, aby ta struktura nie była po prostu typu List
+	( DataReader.cs ((List<ImportedObject>)ImportedObjects).Add(importedObject);)
+
+5.1 - ToArray jest drogą metodą i niepotrzebną, kiedy typem jest List (nie jest to LinkedList)
+	( DataReader.cs var importedObject = ImportedObjects.ToArray()[i];)
+
+5.2 - starczy .Count, w przypadku listy, w przypadku List .Count() też zadziałałoby w O(1), ale raczej lepiej jest użyć property, aby niepewny programista miał pewność, że nie wywołujesz niepotrzebnie od nowa liczenia elementów
+	( DataReader.cs for (int i = 0; i < ImportedObjects.Count(); i++))
+
+6 - BŁĄD - inicjalizacja listy z jednym pustym elementem jest niepożądana
+	( DataReader.cs ImportedObjects = new List<ImportedObject>() { new ImportedObject() };)
+
+7 - Zła praktyka - w takiej sytuacji należy skorzystać z konstruktora, dodałem konstruktory do obu klas
+	(importedObject.Type = values[0]; ... importedObject.IsNullable = values[6];)
+
+8 - Zła praktyka - aby nasz program był bardziej ogólny, warto dodać separator jako argument funkcji
+	(var values = importedLine.Split(';');)
+
+9 - Zła praktyka - Dokonywanie kosmetycznych zmian atrybutów klasy powinno być wydzielone do oddzielnej funkcji, ponadto wszystkie 5 operacji powinno się zamknąć w 1 funkcji należącej do ImportedObject
+	( importedObject.Type = importedObject.Type.Trim().Replace(" ", "").Replace(Environment.NewLine, "").ToUpper(); ... importedObject.ParentType = importedObject.ParentType.Trim().Replace(" ", "").Replace(Environment.NewLine, "");
+
+9.1 - dodane metody: void AdjustAttributes, string AdjustedString (Adjusted a nie Adjust, bo nie zmienia on źródłowego napisu, tylko zwraca nowy)
+
+10 - Niska czytelność - za dużo poziomów klamr, można usprawnić; int i nie jest potrzebny, więc można zastąpić foreachem jak wyżej; zmiana nazwy z impObj na childObject dla lepszej czytelności
+	(for (int i = 0; i < ImportedObjects.Count; i++) ...)
+
+10.1 - Drobna poprawka - Lepiej ciągi znaków porównywać korzystając z Equals, w tym przypadku nie spowoduje to błędu, ale generalnie zalecane jest Equals
+	if (childObj.ParentType == importedObject.Type )
+
+10.2 - Niska czytelność - lepiej importedObject.NumberOfChildren++, czytelniej
+	(importedObject.NumberOfChildren = 1 + importedObject.NumberOfChildren;)
+
+11 - zła praktyka - lepiej skorzystać ze stałej
+	( if (database.Type == "DATABASE"))
+
+12 - niekonsekwentność - ParentType powinno również mieć użyte .ToUpper w clear and correct imported data, bez tego programista w jednych miejscach pamięta, aby dodać ToUpper, a w innych nie
+
+12.1 - usuwanie niepotrzebnych ToUpper
+
+12.2 - zamiana == na Equals
+
+13 - optymalizacja - można wydzielić bazy danych jako osobną listę razem z AdjustAttributes, dalej można dodać do klasy listę z dziećmi i liczeniu dzieci dodać je do list
+
+13.1 - dodanie metody odpowiadającej na pytanie, czy obiekt jest bazą danych
+
+13.2 - dodanie listy dzieci obiektu, metody AddChild, która zawiera w sobie inkrementację liczby dzieci
+
+13.3 - ustawienie setterów jako private oraz zamiana zmiennych na właściwości
+
+13.4 - zamiana typu double na int
+
+13.5 - usunięcie niepotrzebnych klamer i ifów
+
+13.6 - zamiana szukania dzieci na użycie zmiennej Children
+
+14 - rozdzielenie funkcjonalności - funkcjonalności typu import danych, czyszczenie danych, wydruk powinno się rozdzielić na osobne funkcje (pojedyncza funkcja ImportAndPrintData może po prostu wywołać wszystkie te funkcje
+(przeniesienie implementacji do oddzielnych metod)
+
+15 - generyczność wypisywania danych - dobrze, aby każdy ImportedObject mógł mieć metodę wypisującą jego opis
+
+15.1 - w tym celu dodam również referencję do rodzica, aby można było określić głębokość na jakiej jest obiekt
+
+15.2 - głębokość obiektu określona enumem
+
+16 - zmiana IsNullable ze string na bool? (null - nie dotyczy, false - no null, true = nullable)
+
+17 - teoretycznie można by jeszcze się zastanawiać nad dodaniem zmiany trybu wypisywania danych, np. do pliku zamiast do konsoli, ale zakładam, że jako, że metoda ma w nazwie Print to chodziło o wypisywanie tylko w konsoli, ewentualne chęci rozwinięcia zostawiam oryginalnemu programiście.
+
+
+Zeszło na to znacznie więcej czasu niż przewidywałem, ale przyjemnie transformowało się cały ten kod na coś bardziej zgodnego ze sztuką
+
+Pozdrawiam,
+Łukasz Małecki
