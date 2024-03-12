@@ -57,7 +57,7 @@
             {
                 foreach (var childObj in ImportedObjects)
                 {
-                    if (childObj.ParentType.Equals(importedObject.Type) && childObj.ParentName.Equals(importedObject.Name))
+                    if (importedObject.IsParentOf(childObj))
                     {
                         importedObject.AddChild(childObj);
                     }
@@ -160,6 +160,12 @@
             Children.Add(child);
             NumberOfChildren++;
             child.AddParent(this);
+        }
+        public bool IsParentOf(ImportedObject child)
+        {
+            if(child.Parent == this) 
+                return true;
+            return child.ParentType.Equals(this.Type) && child.ParentName.Equals(this.Name);
         }
         public void AddParent(ImportedObject parent)
         {
