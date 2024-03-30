@@ -15,7 +15,6 @@ namespace ConsoleApp.ImportedObjects
         {
             get; set;
         }
-        ImportedObject Parent { get; }
-        void AddParent(ImportedObject parent, bool isCalledFirst=true);
+        ImportedObject Parent { get; set; }
     }
 }

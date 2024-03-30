@@ -11,7 +11,7 @@ namespace ConsoleApp.ImportedObjects
         public Database(string name, string type):base(name, type) 
         {
 
-            Children = new List<ImportedObject>();
+            //Children = new List<ImportedObject>();
         }
 
         public override void PrintData(bool shouldPrintChildren = true)

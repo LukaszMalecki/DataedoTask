@@ -15,14 +15,14 @@ namespace ConsoleApp.ImportedObjects
         {
             get; set;
         }
-        public ImportedObject Parent { get; protected set; }
+        public ImportedObject Parent { get; set; }
         public Table(string name, string type, string schema, string parentName, string parentType):base(name,type)
         {
             Schema = schema;
             ParentName = parentName;
             ParentType = parentType;
             Parent = null;
-            Children = new List<ImportedObject>();
+            //Children = new List<ImportedObject>();
         }
         public override void AdjustAttributes()
         {
@@ -30,17 +30,6 @@ namespace ConsoleApp.ImportedObjects
             Schema = AdjustedString(Schema);
             ParentName = AdjustedString(ParentName);
             ParentType = AdjustedString(ParentType, shouldUpper: true);
-        }
-        public void AddParent(ImportedObject parent, bool isCalledFirst = true)
-        {
-            if (!isCalledFirst)
-            {
-                Parent = parent;
-            }
-            if (Parent == parent)
-                return;
-            Parent = parent;
-            parent.AddChild(this, false);
         }
 
         public override void PrintData(bool shouldPrintChildren = true)
