@@ -44,6 +44,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataReader.cs" />
+    <Compile Include="ImportedObjects\Column.cs" />
+    <Compile Include="ImportedObjects\Constants.cs" />
+    <Compile Include="ImportedObjects\Database.cs" />
+    <Compile Include="ImportedObjects\IChild.cs" />
+    <Compile Include="ImportedObjects\IData.cs" />
+    <Compile Include="ImportedObjects\ImportedObject.cs" />
+    <Compile Include="ImportedObjects\ImportedObjectFactory.cs" />
+    <Compile Include="ImportedObjects\Table.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
